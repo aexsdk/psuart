@@ -1,0 +1,20 @@
+// CFG(section, name, default)
+CFG(main, version, "0.1.0.1")
+CFG(log, flag, "0x10")
+CFG(log, file, DEFAULT_LOG_FILE)
+CFG(log, minLevel,"0")
+CFG(log, maxLevel,"10")
+
+//字符串格式为:com=/dev/ttyUSB0(串口设备字符串),s=9600(波特率),p=N(奇偶校验),b=1(停止位),d=8(数据位数)
+CFG(uart, port, "/dev/ttyACM0,115200,N,1,8")
+
+CFG(network, ipaddr, "127.0.0.1:5001")
+CFG(network, timeout, "3")
+CFG(network, retries, "3")
+CFG(network, secret, "androidex")
+CFG(network, selectTimeout,"0")
+CFG(network, type, "0x24")
+
+CFG(db, ipaddr, "localhost:5432")
+CFG(db, user, "psuadmin")
+#undef CFG
