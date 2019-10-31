@@ -1,12 +1,17 @@
+EXEC = psuart
 OBJS = ini.o psuservice.o utils.o xLogMessage.o
 
 CFLAGS += -DHAVE_CONFIG_H -DLINUX -I../inc
 
-all: $(OBJS) 
+all: $(EXEC)
+
+$(EXEC): $(OBJS) $(CONF_H)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 romfs:
-	$(ROMFSINST) psuservice.sh
+	$(ROMFSINST) /bin/$(EXEC)
+	$(ROMFSINST) /bin/psuservice.sh
 
 clean:
-	rm -f *.o
+	rm -f $(EXEC) *.o
 
