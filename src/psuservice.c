@@ -292,7 +292,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 int main(int argc, char* argv[])
 {
     char fn[MAX_PATH];
-    char cmd[128];
+    char tmp[128];
     int i=0;
     psus_config *psudata = get_psus_data();
 
@@ -302,6 +302,9 @@ int main(int argc, char* argv[])
     printf("Use config file : %s\n",fn);
 
     LoadPsuConfig(fn);
+    if(GetCmdParamValue(argc,argv,"log",tmp)){
+        strcpy(psus_data.log_file,tmp);
+    }
     if(CheckCmdLine(argc,argv,"d")){
         pid_t fpid; //fpid表示fork函数返回的值
         psus_log(10,"Using deamon runing parameter.");
