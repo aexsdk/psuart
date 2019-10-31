@@ -6,6 +6,8 @@
 
 #define PSUSERVICE_TAG     "PSUSERVICE"
 
+#define PSU_DEBUG
+
 /*定义本文件中使用的打印日志、告警和错误的宏
 */
 #define psus_log(level,fmt, args...)      LogMessage(level,__FILE__,__LINE__,PSUSERVICE_TAG,fmt,## args)

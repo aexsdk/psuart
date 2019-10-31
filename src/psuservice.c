@@ -160,7 +160,7 @@ static int LoadPsuConfig(char *fn)
 	memset(&(psudata->net_addr),0,sizeof(struct sockaddr));
 	addr = ParseIPAddr(psudata->network_ipaddr,&port);
 	psudata->net_addr.sin_family = AF_INET;
-	psudata->net_addr.sin_addr.s_addr = addr;
+	psudata->net_addr.sin_addr.s_addr = htonl(addr);
 	psudata->net_addr.sin_port = htons(port);
 
     return r;
@@ -188,7 +188,6 @@ int OpenUart(psus_config *psudata)
 	psudata->uart_fd = com_open(psudata->uart_port,O_RDWR);
 	if(psudata->uart_fd <= 0){
 		psus_error("open uart %s error:%s",psudata->uart_port,strerror(errno));
-		sleep(1);
 		return -1;
 	}
 	return psudata->uart_fd;
@@ -201,6 +200,14 @@ void CloseUart(psus_config *psudata)
 	psudata->uart_fd  = 0;
 }
 
+char *IP2Str(unsigned long ip)
+{
+	static char buf[20];
+	
+	sprintf(buf,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+	return buf;
+}
+
 int StartServiceSocket(psus_config *psudata)
 {
 	unsigned short port;
@@ -210,12 +217,20 @@ int StartServiceSocket(psus_config *psudata)
 	}
 	if ((psudata->net_fd = socket ( AF_INET , SOCK_STREAM , 0)) == -1) {
 		psus_error("Service socket error:%s",strerror(errno));
-		sleep(1);
 		return -1;
 	}
 	if(!SetNonblocking(psudata->net_fd)){
 		psus_warning("set socket %d nonblocking fail.",psudata->net_fd);
 	}
+	psus_log(10,"Socket connecting to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
+	if(connect(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))==-1)
+	{
+		psus_error("Socket connect error:%s",psudata->network_ipaddr);
+		close(psudata->net_fd);
+		psudata->net_fd = 0;
+		return -2;
+	}
+	psus_log(10,"Socket connected to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
 	/*
 	if(bind(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))==-1)
 	{
@@ -245,16 +260,21 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	psus_config *psudata = get_psus_data();
 	
 	ffd = OpenUart(psudata);
-
 	sfd = StartServiceSocket(psudata);
+	if(ffd <=0 || sfd <=0){
+		psus_error("Uart or network not ready.");
+		sleep(1);
+		return 0;
+	}
 	if(ffd > 0)
         FD_CLR(ffd,&rfds);
-    FD_CLR(sfd,&rfds);
+	if(sfd > 0)
+	    FD_CLR(sfd,&rfds);
 	FD_ZERO(&rfds);
+	if(sfd > 0)
+        FD_SET(sfd, &rfds);
 	if(ffd > 0)
         FD_SET(ffd, &rfds);
-	FD_SET(sfd, &rfds);
-
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
 	if(tv.tv_sec == -1)
@@ -272,6 +292,10 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		len = read(ffd,buf,sizeof(buf));
 		if(len > 0 && sfd > 0){
 			iRet = write(sfd,buf,len);
+			#ifdef PSU_DEBUG
+				printf("UART:\n");
+				dump_buffer(buf,len);
+			#endif
 		}
 	}
 	else if(FD_ISSET(sfd, &rfds))
@@ -284,6 +308,10 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		len = read(sfd,buf,sizeof(buf));
 		if(len > 0 && ffd > 0){
 			iRet = write(ffd,buf,len);
+			#ifdef PSU_DEBUG
+				printf("NET:\n");
+				dump_buffer(buf,len);
+			#endif
 		}
 	}
 	return iRet;
