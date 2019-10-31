@@ -14,6 +14,17 @@
 
 #define IP2STR(ip)      (ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF
 
+#define MAX_PATH	260
+#define MAX(a,b) (a>b)?(a):(b)
+
+#ifdef ANDROIDEX
+	#define DEFAULT_ROOT_PATH		"/data/misc/androidex"
+	#define DEFAULT_LOG_FILE		DEFAULT_ROOT_PATH"/log/psuart.log"
+#else
+	#define DEFAULT_ROOT_PATH		"/tmp"
+	#define DEFAULT_LOG_FILE		DEFAULT_ROOT_PATH"/log/psuart.log"
+#endif
+
 /* define the config struct type */
 typedef struct {
     int flag;                           //日志输出类别
@@ -27,14 +38,6 @@ typedef struct {
     #define CFG(s, n, default) char *s##_##n;
     #include "psuservice.def"
 } psus_config;
-
-/* create one and fill in its default values */
-psus_config Psus_Config_Default = {
-    #define CFG(s, n, default) default,
-    #include "psuservice.def"
-};
-
-typedef struct net_handle PSUSHANDLE;
 
 psus_config *get_psus_data(void);
 

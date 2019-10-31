@@ -807,7 +807,7 @@ static int com_set_parity(int fd, int databits, int stopbits, char parity) {
 int com_open(char *dev,int flag) {
 	int fd;
 	char arg[5][MAX_ARG_LEN];
-	char *com="/dev/ttyUSB0",*s="115200",*p="N",*b="1",*d="8";
+	char *com="/dev/ttyACM0",*s="115200",*p="N",*b="1",*d="8";
 
 	memset(arg,0,5*MAX_ARG_LEN);
 	int argc = split_arguments(dev,arg,5,',');

@@ -2,8 +2,8 @@
 ##AM_CFLAGS=-g -Wall
 
 bin_PROGRAMS = psuart
-ParkService_INCLUDES = $(PSRLIB_INC)
-ParkService_SOURCES = psuservice.c ini.c utils.c xLogMessage.c
-ParkService_LDADD = @LIBOBJS@  
+psuart_INCLUDES = $(PSRLIB_INC)
+psuart_SOURCES = psuservice.c ini.c utils.c xLogMessage.c
+psuart_LDADD = @LIBOBJS@  
 
 

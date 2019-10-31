@@ -17,7 +17,6 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-#include "md5.h"
 #include "psuservice.h"
 static psus_config psus_data;               //从配置文件中读取的服务端配置数据
 
@@ -56,107 +55,33 @@ static void dump_config(psus_config *cfg)
 }
 
 /* clear all the variables in the config, one per line */
-static void clear_config(psulib_config *cfg)
+static void clear_config(psus_config *cfg)
 {
 	#define CFG(s, n, default)	if(cfg->s##_##n != NULL){	\
 									free(cfg->s##_##n);		\
 								cfg->s##_##n = NULL;	\
 							}
-	#include "psulib.def"
+	#include "psuservice.def"
 }
 
 /* clear all the variables in the config, one per line */
-static void save_config(psulib_config *cfg,char *file)
+static void save_config(psus_config *cfg,char *file)
 {
 	//printf("%s = %d\n",__func__,__LINE__);
 	#define CFG(s, n, default)	write_profile_string(#s,#n,cfg->s##_##n,file);
-	#include "psulib.def"
+	#include "psuservice.def"
 }
 
-static void default_config(psulib_config *cfg,psulib_config *defcfg)
+static void default_config(psus_config *cfg,psus_config *defcfg)
 {
 	//printf("%s = %d\n",__func__,__LINE__);
 	#define CFG(s, n, default)	if(cfg->s##_##n != NULL)	\
 									free(cfg->s##_##n);		\
 								if(defcfg->s##_##n != NULL)	\
 									cfg->s##_##n = strdup(defcfg->s##_##n);
-	#include "psulib.def"
+	#include "psuservice.def"
 }
 
-/**
-    从配置文件读取配置的函数，当管理命令需要执行载入配置命令时可以使用此函数
-*/
-static int LoadPsuConfig(char *fn)
-{
-    int r = TRUE;
-    psus_config *psudata = &psus_data;
-
-	int ret = 1;
-	unsigned short port;
-
-    memcpy(&psus_data,0,sizeof(psus_config));
-	default_config(psusdata,&Psus_Config_Default);
-	
-    if (ini_parse(fn, handler, &psus_data) < 0){
-        psus_error("Can't load '%s', using defaults",fn);
-        r = FALSE;
-    }
-    dump_config(&psus_data);
-
-	psudata->flag = StrToInt(psudata->log_flag);
-	psudata->minLevel = StrToInt(psudata->log_minLevel);
-	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
-	SetLogLevel(psudata->minLevel,psudata->maxLevel);
-
-	SetLogCallback(_log_message,_log_warning,_log_error);
-	
-	psudata->flag = StrToInt(psudata->log_flag);
-	psudata->minLevel = StrToInt(psudata->log_minLevel);
-	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
-	SetLogLevel(psudata->minLevel,psudata->maxLevel);
-	psudata->selectTimeout = StrToInt(psudata->network_selectTimeout);
-
-	//初始化服务Socket地址信息
-	unsigned int addr;
-	memset(&(psudata->srv_addr),0,sizeof(struct sockaddr));
-	addr = ParseIPAddr(psudata->network_ipaddr,&port);
-	psudata->srv_addr.sin_family = AF_INET;
-	psudata->srv_addr.sin_addr.s_addr = addr;
-	psudata->srv_addr.sin_port = htons(port);
-
-    return r;
-}
-
-int normalReencode(void *user, const char*src, char*data)
-{
-    strcpy(data,src);
-    return strlen(data);
-}
-
-/* process a line of the INI file, storing valid values into config struct */
-static int normalParser(void *user, const char *name,const char *value)
-{
-    psus_log(15,"\t%s=%s",name,value);
-    return 0;
-}
-
-
-int normalRequest(void *user,struct net_handle *h)
-{
-    //服务端对接受到的请求的处理函数，处理完后要同步发出回应
-    psus_log(10,"\tResponse to %d.%d.%d.%d:%d(len=%d)...",IP2STR(ntohl(h->src_addr.sin_addr.s_addr)),
-        ntohs(h->src_addr.sin_port),h->req_len);
-    sendto(h->fd, h->request, h->req_len, 0,
-        (const struct sockaddr *)(void *)&h->src_addr,
-        (socklen_t)sizeof(struct sockaddr_in));
-    return 0;
-}
-
-int normalResponse(void *user,struct net_handle *h)
-{
-    //服务器端不处理同步回应函数，服务端向客户端发送的请求都是通过异步回应来满足的
-    return 0;
-}
 
 /*
 	设置启动和关闭输出到文件的标识。
@@ -200,6 +125,50 @@ psus_config *get_psus_data(void)
     return &psus_data;
 }
 
+/**
+    从配置文件读取配置的函数，当管理命令需要执行载入配置命令时可以使用此函数
+*/
+static int LoadPsuConfig(char *fn)
+{
+    int r = TRUE;
+    psus_config *psudata = get_psus_data();
+
+	int ret = 1;
+	unsigned short port;
+
+    memcpy(psudata,0,sizeof(psus_config));
+	default_config(psudata,&Psus_Config_Default);
+	
+    if (ini_parse(fn, handler, &psus_data) < 0){
+        psus_error("Can't load '%s', using defaults",fn);
+        r = FALSE;
+    }
+    dump_config(&psus_data);
+
+	psudata->flag = StrToInt(psudata->log_flag);
+	psudata->minLevel = StrToInt(psudata->log_minLevel);
+	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
+	SetLogLevel(psudata->minLevel,psudata->maxLevel);
+
+	SetLogCallback(_log_message,_log_warning,_log_error);
+	
+	psudata->flag = StrToInt(psudata->log_flag);
+	psudata->minLevel = StrToInt(psudata->log_minLevel);
+	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
+	SetLogLevel(psudata->minLevel,psudata->maxLevel);
+	psudata->selectTimeout = StrToInt(psudata->network_selectTimeout);
+
+	//初始化服务Socket地址信息
+	unsigned int addr;
+	memset(&(psudata->net_addr),0,sizeof(struct sockaddr));
+	addr = ParseIPAddr(psudata->network_ipaddr,&port);
+	psudata->net_addr.sin_family = AF_INET;
+	psudata->net_addr.sin_addr.s_addr = addr;
+	psudata->net_addr.sin_port = htons(port);
+
+    return r;
+}
+
 void dump_buffer(char *pstr,int size)
 {
 	char buf[1024];
@@ -219,7 +188,7 @@ int OpenUart(psus_config *psudata)
 	if(psudata->uart_fd > 0)
 		return psudata->uart_fd;
 
-	psudata->uart_fd = com_open(psudata->uart_port);
+	psudata->uart_fd = com_open(psudata->uart_port,O_RDWR);
 	if(psudata->uart_fd <= 0){
 		psus_error("open fifo error:%s",strerror(errno));
 		return -1;
@@ -255,7 +224,7 @@ int StartServiceSocket(psus_config *psudata)
 		psudata->net_fd = 0;
 		return -2;
 	}
-	psulib_log(10,"Service socket bind to %d...",ntohs(psudata->net_addr.sin_port));
+	psus_log(10,"Service socket bind to %d...",ntohs(psudata->net_addr.sin_port));
 	return psudata->net_fd;
 }
 
@@ -272,10 +241,11 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 {
 	int iRet = 0,mfd,sfd,ffd;
 	fd_set rfds;
+	psus_config *psudata = get_psus_data();
 	
-	ffd = OpenUart(get_psu_data());
+	ffd = OpenUart(psudata);
 
-	sfd = StartServiceSocket(get_psu_data());
+	sfd = StartServiceSocket(psudata);
 	if(ffd > 0)
         FD_CLR(ffd,&rfds);
     FD_CLR(sfd,&rfds);
@@ -298,9 +268,9 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		unsigned char buf[4096];
 
 		memset(buf,0,sizeof(buf));
-		len = read(ffd,buf,bufsize);
+		len = read(ffd,buf,sizeof(buf));
 		if(len > 0 && sfd > 0){
-			iRet = write(sfd,buf,bufsize);
+			iRet = write(sfd,buf,len);
 		}
 	}
 	else if(FD_ISSET(sfd, &rfds))
@@ -310,9 +280,9 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		unsigned char buf[4096];
 
 		memset(buf,0,sizeof(buf));
-		len = read(sfd,buf,bufsize);
+		len = read(sfd,buf,sizeof(buf));
 		if(len > 0 && ffd > 0){
-			iRet = write(ffd,buf,bufsize);
+			iRet = write(ffd,buf,len);
 		}
 	}
 	return iRet;
@@ -323,24 +293,20 @@ int main(int argc, char* argv[])
     char fn[MAX_PATH];
     char cmd[128];
     int i=0;
-    struct net_handle psushandle;
+    psus_config *psudata = get_psus_data();
 
-    memset(&psushandle,0,sizeof(struct net_handle));
     if(!GetCmdParamValue(argc,argv,"config",fn))
         strcpy(fn,"/etc/psr/psuserver.conf");
     //printf("%s\n",argv[0]);
     printf("Use config file : %s\n",fn);
 
-    LoadPsrConfig(fn);
+    LoadPsuConfig(fn);
     if(CheckCmdLine(argc,argv,"d")){
         pid_t fpid; //fpid表示fork函数返回的值
         psus_log(10,"Using deamon runing parameter.");
         fpid = fork();
         if (fpid < 0){
             psus_error("error in fork!");
-            if(get_psr_data()->mrg_fd > 0){
-                close(get_psr_data()->mrg_fd);
-            }
             return -1;
         }else if (fpid == 0){
             //子进程
@@ -355,11 +321,11 @@ int main(int argc, char* argv[])
     //处理命令接口
     int iRet = 0;
     do{
-        iRet = WaitMessageAndHandle(fn,get_psr_data()->selectTimeout);
+        iRet = WaitMessageAndHandle(fn,psudata->selectTimeout);
     }while(iRet >= 0);
 
     psus_warning("Process %d end.",getpid());
-    CloseUart(get_psr_data());
-    CloseServiceSocket(get_psr_data());
+    CloseUart(psudata);
+    CloseServiceSocket(psudata);
     return 0;
 }
