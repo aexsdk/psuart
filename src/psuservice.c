@@ -130,17 +130,15 @@ psus_config *get_psus_data(void)
 */
 static int LoadPsuConfig(char *fn)
 {
-    int r = TRUE;
-    psus_config *psudata = get_psus_data();
-
+	int r = TRUE;
+	psus_config *psudata = get_psus_data();
 	int ret = 1;
 	unsigned short port;
 
-    memcpy(psudata,0,sizeof(psus_config));
-	default_config(psudata,&Psus_Config_Default);
-	
+	SetLogCallback(_log_message,_log_warning,_log_error);
     if (ini_parse(fn, handler, &psus_data) < 0){
         psus_error("Can't load '%s', using defaults",fn);
+		default_config(psudata,&Psus_Config_Default);
         r = FALSE;
     }
     dump_config(&psus_data);
@@ -149,8 +147,6 @@ static int LoadPsuConfig(char *fn)
 	psudata->minLevel = StrToInt(psudata->log_minLevel);
 	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
 	SetLogLevel(psudata->minLevel,psudata->maxLevel);
-
-	SetLogCallback(_log_message,_log_warning,_log_error);
 	
 	psudata->flag = StrToInt(psudata->log_flag);
 	psudata->minLevel = StrToInt(psudata->log_minLevel);
@@ -190,7 +186,8 @@ int OpenUart(psus_config *psudata)
 
 	psudata->uart_fd = com_open(psudata->uart_port,O_RDWR);
 	if(psudata->uart_fd <= 0){
-		psus_error("open fifo error:%s",strerror(errno));
+		psus_error("open uart %s error:%s",psudata->uart_port,strerror(errno));
+		sleep(1);
 		return -1;
 	}
 	return psudata->uart_fd;
@@ -212,11 +209,13 @@ int StartServiceSocket(psus_config *psudata)
 	}
 	if ((psudata->net_fd = socket ( AF_INET , SOCK_STREAM , 0)) == -1) {
 		psus_error("Service socket error:%s",strerror(errno));
+		sleep(1);
 		return -1;
 	}
 	if(!SetNonblocking(psudata->net_fd)){
 		psus_warning("set socket %d nonblocking fail.",psudata->net_fd);
 	}
+	/*
 	if(bind(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))==-1)
 	{
 		psus_error("Service bind socket error:%d",ntohs(psudata->net_addr.sin_port));
@@ -225,6 +224,7 @@ int StartServiceSocket(psus_config *psudata)
 		return -2;
 	}
 	psus_log(10,"Service socket bind to %d...",ntohs(psudata->net_addr.sin_port));
+	*/
 	return psudata->net_fd;
 }
 

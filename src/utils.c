@@ -844,7 +844,7 @@ int com_open(char *dev,int flag) {
 	fd = open(com, flag | O_NOCTTY | O_NDELAY);
 
 	if (fd<=0) {
-		_log("utils","Can't Open Serial Port %s:%s\n",com,strerror(errno));
+		//_log("utils","Can't Open Serial Port %s:%s\n",com,strerror(errno));
 	} else {
 		//int pn = (p[0] != 'N') || (p[0] != 'n');
 		char pn= p[0];
@@ -885,8 +885,9 @@ void com_close(int fd)
 {
 	//检查串口是否打开如果没有打开则返回，什么也不做
 	if(fd>0){
-		if(close(fd)==-1)
-			_log( "utils","Close Serial Port:%s\n",strerror(errno));
+		if(close(fd)==-1){
+			//_log( "utils","Close Serial Port:%s\n",strerror(errno));
+		}
 	}
 }
 /**
