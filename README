@@ -1,0 +1,33 @@
+ParkServer项目简介：
+   ParkServer是为了停车管理系统的设备管理而设计的，它包括：
+    1、停车管理服务器：负责连接无线中继、管理终端、巡检平板等设备。提供管理云服务；
+    2、停车管理客户端：用于无线中继、管理终端和巡检平板，与停车管理服务端进行通讯的模块。
+
+停车管理服务端：
+    启动方式：
+        ParkService --config:/etc/psr/psrservice.conf -d
+        ParkService --config:/etc/psr/psrservice.conf --cmd:reload      通知重新应用配置
+        ParkService --config:/etc/psr/psrservice.conf --cmd:quit        通知退出服务
+        ParkService --config:/etc/psr/psrservice.conf --cmd:xxxx        通知服务程序解析命令xxxx
+    其他程序可以通过127.0.0.1:5000或者/tmp/psrfifo发送cmd，端口和FIFO地址可以在配置文件中配置
+
+停车管理客户端：
+    启动方式：
+
+#define     PSR_POS_FLAG           0
+#define     PSR_POS_IDENT          1       
+#define     PSR_POS_CMDTYPE        2
+#define     PSR_POS_TYPE           3
+#define     PSR_POS_DATALEN        4
+#define     PSR_POS_DATA           6
+
+通讯数据格式：
+      flag : 偏移地址0长度1字节，数据包引导符0xFB
+      ident : 偏移地址1长度1字节，数据包的标识，方便处理重复数据包
+      cmd : 偏移地址2长度1字节，命令类型，系统将根据命令的类型做相应的预处理，0x10以下的命令保留，具体业务命令须大于0x10
+      fmt : 偏移地址3长度1字节，数据包的处理方式，0x10=http,0x11=xml,0x12=json,0x13=radius
+      len : 偏移地址4长度2字节，数据包长度，网络字节序整数
+      data : 偏移地址6长度len字节
+      CRC : 1字节（可选），data校验和
+      eflag : 1字节（可选），0xFE
+    
