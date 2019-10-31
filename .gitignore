@@ -1,0 +1,16 @@
+autom4te.cache
+config
+*.Po
+aclocal.m4
+config.h
+config.h.in
+config.log
+config.status
+configure
+COPYING
+INSTALL
+Makefile
+Makefile.in
+stamp-h1
+src/Makefile
+src/Makefile.in
