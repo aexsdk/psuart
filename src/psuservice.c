@@ -168,15 +168,16 @@ static int LoadPsuConfig(char *fn)
 
 void dump_buffer(char *pstr,int size)
 {
-	char buf[1024];
+	char buf[4096];
 	int hexlen = sizeof(buf);
+	char *p = pstr;
 
-	if(pstr != NULL && size > 0){
+	while(p != NULL && size > 0){
 		memset(buf,0,sizeof(buf));
-		HexEncode(pstr,size,buf,&hexlen);
+		HexEncode(p,size,buf,&hexlen);
 		_log(psus_data.log_file,psus_data.flag,buf);
-	}else{
-		_log(psus_data.log_file,psus_data.flag,"(null) or empty.");
+		p += 16;
+		size -= 16;
 	}
 }
 
@@ -293,7 +294,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(len > 0 && sfd > 0){
 			iRet = write(sfd,buf,len);
 			#ifdef PSU_DEBUG
-				printf("UART:\n");
+				_log(psus_data.log_file,psus_data.flag,"UART:\n");
 				dump_buffer(buf,len);
 			#endif
 		}
@@ -309,7 +310,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(len > 0 && ffd > 0){
 			iRet = write(ffd,buf,len);
 			#ifdef PSU_DEBUG
-				printf("NET:\n");
+				_log(psus_data.log_file,psus_data.flag,"NET:\n");
 				dump_buffer(buf,len);
 			#endif
 		}
@@ -333,6 +334,9 @@ int main(int argc, char* argv[])
     if(GetCmdParamValue(argc,argv,"log",tmp)){
         strcpy(psus_data.log_file,tmp);
     }
+    memset(tmp,0,sizeof(tmp));
+    ExtractFilePath(psus_data.log_file,tmp);
+    mkdir(tmp,0777);
     if(CheckCmdLine(argc,argv,"d")){
         pid_t fpid; //fpid表示fork函数返回的值
         psus_log(10,"Using deamon runing parameter.");

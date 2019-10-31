@@ -20,11 +20,11 @@
 #define MAX(a,b) (a>b)?(a):(b)
 
 #ifdef ANDROIDEX
-	#define DEFAULT_ROOT_PATH		"/data/misc/androidex"
-	#define DEFAULT_LOG_FILE		DEFAULT_ROOT_PATH"/log/psuart.log"
+	#define DEFAULT_ROOT_PATH		"/data/log/"
+	#define DEFAULT_LOG_FILE		DEFAULT_ROOT_PATH"psuart.log"
 #else
-	#define DEFAULT_ROOT_PATH		"/tmp"
-	#define DEFAULT_LOG_FILE		DEFAULT_ROOT_PATH"/log/psuart.log"
+	#define DEFAULT_ROOT_PATH		"/tmp/log/"
+	#define DEFAULT_LOG_FILE		DEFAULT_ROOT_PATH"psuart.log"
 #endif
 
 /* define the config struct type */

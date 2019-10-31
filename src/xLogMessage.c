@@ -250,7 +250,7 @@ EZUTILS_API void _log(char *fn,int flag,char *pszDest)
 {
 	if((flag&DEBUG_CONSOLE) == DEBUG_CONSOLE){
 		//为了便于测试同时输出信息到控制台
-		printf("%s\r\n",pszDest);
+		printf("\t%s\n",pszDest);
 	}
 	if((flag&DEBUG_FILE) == DEBUG_FILE && fn != NULL)
 	{
@@ -262,7 +262,7 @@ EZUTILS_API void _log(char *fn,int flag,char *pszDest)
 		tblock = localtime(&timer); 
 		log_fd = fopen(fn,"a+");
 		if(log_fd != NULL){
-			fprintf(log_fd,"%.4d-%.2d-%.2d %.2d:%.2d:%.2d\t%s\r\n",
+			fprintf(log_fd,"%.4d-%.2d-%.2d %.2d:%.2d:%.2d\t%s\n",
 				tblock->tm_year+1900,
 				tblock->tm_mon+1,
 				tblock->tm_mday,
@@ -272,7 +272,7 @@ EZUTILS_API void _log(char *fn,int flag,char *pszDest)
 				pszDest);
 			fclose(log_fd);
 		}else{
-			printf("Open %s error:%s.\r\n",fn,strerror(errno));
+			//printf("Open %s error:%s.\n",fn,strerror(errno));
 		}
 	}
 }

@@ -24,12 +24,12 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
-BINPATH="/usr/bin/psusvr"
+BINPATH="/usr/bin"
 CONFIGFILE="/etc/psuconfig.conf"
 LOGFILE="/var/log/psuconfig.log"
-BINFILE="$BINPATH/psuserver"
+BINFILE="$BINPATH/psuart"
 RETVAL=0
-prog="psuserver"
+prog="psuart"
 
 start() {
         # Start daemons.
@@ -39,7 +39,7 @@ start() {
 	[ -x $BINFILE ] || exit 1
 	[ -x $CONFIGFILE ] || exit 1
 	echo -n $"Starting $prog : "
-	daemon $BINFILE $CONFIGFILE 
+	daemon $BINFILE --config $CONFIGFILE --log $LOGFILE
 	RETVAL=$?
 	echo
         [ $RETVAL -eq 0 ]
