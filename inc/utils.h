@@ -28,6 +28,7 @@ char GetHexValue(char ch);
 int HexDecode(const char *pSrcData, int nSrcLen, unsigned char *pbDest, int* pnDestLen);
 int utils_strincmp(const char *s1,const char *s2,int n);
 unsigned char utils_crc(const unsigned char *buf,int size);
+int  Setblocking(int  fd);
 /**
  * 将参数字符串分割为数组
  */

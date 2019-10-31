@@ -625,7 +625,24 @@ int  SetNonblocking(int  fd)
     opts = fcntl(fd,F_GETFL);
     if (opts >= 0 )
     {
-        opts  =  opts | O_NONBLOCK;
+        opts  |=  O_NONBLOCK;
+        if(fcntl(fd,F_SETFL,opts) >= 0 )
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
+int  Setblocking(int  fd)
+{
+    int  opts;
+
+    opts = fcntl(fd,F_GETFL);
+    if (opts >= 0 )
+    {
+        opts  &=  ~O_NONBLOCK;
         if(fcntl(fd,F_SETFL,opts) >= 0 )
         {
             return TRUE;

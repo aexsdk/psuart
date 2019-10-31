@@ -220,18 +220,30 @@ int StartServiceSocket(psus_config *psudata)
 		psus_error("Service socket error:%s",strerror(errno));
 		return -1;
 	}
+
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1000;
+    socklen_t len = sizeof(struct timeval);
+    if(setsockopt( psudata->net_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, len ) == -1){
+    	psus_error("Socket setsockopt error [%d]: %s",errno,strerror(errno));
+    }
+    
 	if(!SetNonblocking(psudata->net_fd)){
 		psus_warning("set socket %d nonblocking fail.",psudata->net_fd);
 	}
 	psus_log(10,"Socket connecting to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
-	if(connect(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))==-1)
+	if(connect(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))<0)
 	{
-		psus_error("Socket connect error:%s",psudata->network_ipaddr);
-		close(psudata->net_fd);
-		psudata->net_fd = 0;
-		return -2;
+		if(errno != EINPROGRESS){
+			psus_error("Socket connect %s error [%d]: %s",psudata->network_ipaddr,errno,strerror(errno));
+			close(psudata->net_fd);
+			psudata->net_fd = 0;
+			return -2;
+		}
+	}else{
+		psus_log(10,"Socket connected to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
 	}
-	psus_log(10,"Socket connected to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
 	/*
 	if(bind(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))==-1)
 	{
@@ -257,38 +269,49 @@ void CloseServiceSocket(psus_config *psudata)
 int WaitMessageAndHandle(char *configfn,int timeout)
 {
 	int iRet = 0,mfd,sfd,ffd;
-	fd_set rfds;
+	fd_set rfds,wfds;
 	psus_config *psudata = get_psus_data();
+	int len;
+	unsigned char buf[4096];
 	
 	ffd = OpenUart(psudata);
 	sfd = StartServiceSocket(psudata);
-	if(ffd <=0 || sfd <=0){
+	if(ffd <=0 && sfd <=0){
 		psus_error("Uart or network not ready.");
 		sleep(1);
 		return 0;
 	}
 	if(ffd > 0)
         FD_CLR(ffd,&rfds);
-	if(sfd > 0)
+	if(sfd > 0){
 	    FD_CLR(sfd,&rfds);
+	    FD_CLR(sfd,&wfds);
+	}
 	FD_ZERO(&rfds);
-	if(sfd > 0)
+	FD_ZERO(&wfds);
+	if(sfd > 0){
         FD_SET(sfd, &rfds);
+        FD_SET(sfd, &wfds);
+    }
 	if(ffd > 0)
         FD_SET(ffd, &rfds);
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
 	if(tv.tv_sec == -1)
-		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, NULL);
+		iRet = select(MAX(sfd,ffd), &rfds, &wfds, NULL, NULL);
 	else
-		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, &tv);
-	if(0 >= iRet)	return 0;   //等待超时，进入下一次循环
+		iRet = select(MAX(sfd,ffd), &rfds, &wfds, NULL, &tv);
+	if(0 >= iRet){
+		if(iRet == 0){
+			int error;
+			iRet = getsockopt(sfd, SOL_SOCKET, SO_ERROR, &error, (socklen_t *)&len);
+			psus_log(10,"Socket getsockopt[err=%d]:%d",error,iRet);
+		}
+		return 0;   //等待超时，进入下一次循环
+	}
 	if(FD_ISSET(ffd, &rfds))
 	{
 		//这里处理通过UART收到的命令
-		int len;
-		unsigned char buf[4096];
-
 		memset(buf,0,sizeof(buf));
 		len = read(ffd,buf,sizeof(buf));
 		if(len > 0 && sfd > 0){
@@ -299,12 +322,9 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 			#endif
 		}
 	}
-	else if(FD_ISSET(sfd, &rfds))
+	if(FD_ISSET(sfd, &rfds))
 	{
 		//这里处理的是服务器主动向客户端发送的消息，处理完以后客户端沿沿原途径做出回应
-		int len;
-		unsigned char buf[4096];
-
 		memset(buf,0,sizeof(buf));
 		len = read(sfd,buf,sizeof(buf));
 		if(len > 0 && ffd > 0){
@@ -313,6 +333,15 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 				_log(psus_data.log_file,psus_data.flag,"NET:\n");
 				dump_buffer(buf,len);
 			#endif
+		}
+	}
+	if(FD_ISSET(sfd, &wfds)){
+		int error;
+		iRet = getsockopt(sfd, SOL_SOCKET, SO_ERROR, &error, (socklen_t *)&len);
+		psus_log(10,"Socket getsockopt[err=%d]:%s",error,strerror(errno));
+		if(iRet == 0 && error == 0){
+			psus_log(10,"Socket connected to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
+			Setblocking(sfd);
 		}
 	}
 	return iRet;

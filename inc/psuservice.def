@@ -12,7 +12,7 @@ CFG(network, ipaddr, "192.168.1.10:5000")
 CFG(network, timeout, "3")
 CFG(network, retries, "3")
 CFG(network, secret, "androidex")
-CFG(network, selectTimeout,"0")
+CFG(network, selectTimeout,"-1")
 CFG(network, type, "0x24")
 
 #undef CFG

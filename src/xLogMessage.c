@@ -250,7 +250,7 @@ EZUTILS_API void _log(char *fn,int flag,char *pszDest)
 {
 	if((flag&DEBUG_CONSOLE) == DEBUG_CONSOLE){
 		//为了便于测试同时输出信息到控制台
-		printf("\t%s\n",pszDest);
+		printf("%s\n",pszDest);
 	}
 	if((flag&DEBUG_FILE) == DEBUG_FILE && fn != NULL)
 	{
@@ -304,7 +304,7 @@ EZUTILS_API	void LogMessage(int Level,char *file,int line,const char *tag,char *
 
 		memset(pszDest,0,sizeof(pszDest));
 		if(0){
-			sprintf(pszDest,"Line %d in %s\nHINT:[%s]",line,file,tag);
+			sprintf(pszDest,"Line %d in %s\n\tHINT:[%s]",line,file,tag);
 			hlen = strlen(pszDest);
 			p = pszDest + hlen;
 		}
@@ -328,7 +328,7 @@ EZUTILS_API	void LogErrorMessage(char *file,int line,const char *tag,char *fmt,.
     va_list args;
 
     memset(pszDest,0,sizeof(pszDest));
-    sprintf(pszDest,"Line %d in %s\nERROR:[%s]",line,file,tag);
+    sprintf(pszDest,"Line %d in %s\n\tERROR:[%s]",line,file,tag);
     hlen = strlen(pszDest);
     p = pszDest + hlen;
     va_start(args, fmt);
@@ -350,7 +350,7 @@ EZUTILS_API	void LogWarningMessage(char *file,int line,const char *tag,char *fmt
     va_list args;
 
     memset(pszDest,0,sizeof(pszDest));
-    sprintf(pszDest,"Line %d in %s\nWARNING:[%s]",line,file,tag);
+    sprintf(pszDest,"Line %d in %s\n\tWARNING:[%s]",line,file,tag);
     hlen = strlen(pszDest);
     p = pszDest + hlen;
     va_start(args, fmt);
