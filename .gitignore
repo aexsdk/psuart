@@ -17,3 +17,6 @@ src/Makefile.in
 psuart
 psuserver.conf
 *.log
+config/compile
+config/depcomp
+config/missing
