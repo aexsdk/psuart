@@ -1,5 +1,4 @@
 autom4te.cache
-config
 *.Po
 aclocal.m4
 config.h
