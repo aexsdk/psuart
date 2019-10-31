@@ -139,6 +139,7 @@ static int LoadPsuConfig(char *fn)
     if (ini_parse(fn, handler, &psus_data) < 0){
         psus_error("Can't load '%s', using defaults",fn);
 		default_config(psudata,&Psus_Config_Default);
+		save_config(psudata,fn);
         r = FALSE;
     }
     dump_config(&psus_data);

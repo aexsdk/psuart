@@ -16,3 +16,4 @@ src/Makefile
 src/Makefile.in
 *.o
 psuart
+psuserver.conf
