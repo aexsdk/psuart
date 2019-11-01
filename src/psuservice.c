@@ -290,6 +290,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	    FD_CLR(sfd,&rfds);
 	}
 	FD_ZERO(&rfds);
+	FD_SET(0,&rfds);
 	if(sfd > 0){
         FD_SET(sfd, &rfds);
     }
@@ -318,7 +319,8 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 				dump_buffer(buf,len);
 			#endif
 		}
-	}else if(FD_ISSET(sfd, &rfds))
+	}
+	if(FD_ISSET(sfd, &rfds))
 	{
 		//这里处理的是服务器主动向客户端发送的消息，处理完以后客户端沿沿原途径做出回应
 		//_log(psus_data.log_file,psus_data.flag,"UART:\n");
@@ -331,6 +333,12 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 				dump_buffer(buf,len);
 			#endif
 		}
+	}
+	if(FD_ISSET(0,&rfds))
+	{
+		memset(buf,0,sizeof(buf));
+		scanf("%s",buf);
+		write(ffd,buf,strlen(buf));
 	}
 	return iRet;
 }
