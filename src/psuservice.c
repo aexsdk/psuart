@@ -358,8 +358,9 @@ int main(int argc, char* argv[])
     psus_config *psudata = get_psus_data();
 
     if(!GetCmdParamValue(argc,argv,"config",fn))
-        strcpy(fn,"/etc/psr/psuserver.conf");
+        strcpy(fn,"/etc/psu/psuserver.conf");
     //printf("%s\n",argv[0]);
+    mkdir("/etc/psu",0777);
     printf("Use config file : %s\n",fn);
 
     LoadPsuConfig(fn);
