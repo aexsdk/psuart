@@ -168,13 +168,14 @@ static int LoadPsuConfig(char *fn)
 
 void dump_buffer(char *pstr,int size)
 {
-	char buf[4096];
+	char buf[40];
 	int hexlen = sizeof(buf);
 	char *p = pstr;
 
-	while(p != NULL && size > 0){
+	while(size > 0){
 		memset(buf,0,sizeof(buf));
-		HexEncode(p,MIN(16,size),buf,&hexlen);
+		buf[0] = '\t';
+		HexEncode(p,MIN(16,size),buf+1,&hexlen);
 		_log(psus_data.log_file,psus_data.flag,buf);
 		p += 16;
 		size -= 16;
