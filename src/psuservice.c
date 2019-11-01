@@ -294,7 +294,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
         FD_SET(ffd, &rfds);
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
-	psus_log(10,"Waiting for DATA(uid=%d,nid=%d,max=%d)...",ffd,sfd,MAX(sfd,ffd)+1);
+	//psus_log(10,"Waiting for DATA(uid=%d,nid=%d,max=%d)...",ffd,sfd,MAX(sfd,ffd)+1);
 	if(tv.tv_sec == -1)
 		iRet = select(MAX(sfd,ffd)+1, &rfds, NULL, NULL, NULL);
 	else
@@ -312,8 +312,8 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		len = read(ffd,buf,sizeof(buf));
 		if(len > 0 && sfd > 0){
 			iRet = write(sfd,buf,len);
+			printf("UART:%d\n",len);
 			#ifdef PSU_DEBUG
-				printf("UART:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
@@ -326,8 +326,8 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		len = read(sfd,buf,sizeof(buf));
 		if(len > 0 && ffd > 0){
 			iRet = write(ffd,buf,len);
+			printf("NET:%d\n",len);
 			#ifdef PSU_DEBUG
-				printf("NET:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
