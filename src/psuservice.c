@@ -300,6 +300,8 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	else
 		iRet = select(MAX(sfd,ffd)+1, &rfds, NULL, NULL, &tv);
 	if(0 >= iRet){
+		CloseUart(get_psus_data());
+		CloseServiceSocket(get_psus_data());
 		return 0;   //等待超时，进入下一次循环
 	}
 	if(FD_ISSET(ffd, &rfds))
