@@ -174,6 +174,7 @@ void dump_buffer(char *pstr,int size)
 
 	while(size > 0){
 		memset(buf,0,sizeof(buf));
+		hexlen = sizeof(buf);
 		HexEncode(p,MIN(16,size),buf,&hexlen);
 		printf("\t%s \n",buf);
 		p += 16;
@@ -313,7 +314,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(len > 0 && sfd > 0){
 			iRet = write(sfd,buf,len);
 			#ifdef PSU_DEBUG
-				psus_log(psus_data.log_file,psus_data.flag,"UART:%d\n",len);
+				printf("UART:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
@@ -326,7 +327,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(len > 0 && ffd > 0){
 			iRet = write(ffd,buf,len);
 			#ifdef PSU_DEBUG
-				psus_log(psus_data.log_file,psus_data.flag,"NET:%d\n",len);
+				printf("NET:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
