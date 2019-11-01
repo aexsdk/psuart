@@ -271,7 +271,7 @@ void CloseServiceSocket(psus_config *psudata)
 
 int WaitMessageAndHandle(char *configfn,int timeout)
 {
-	int iRet = 0,mfd,sfd,ffd;
+	int iRet = 0,sfd,ffd;
 	fd_set rfds;
 	psus_config *psudata = get_psus_data();
 	int len;
@@ -284,11 +284,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		sleep(1);
 		return 0;
 	}
-	if(ffd > 0)
-        FD_CLR(ffd,&rfds);
-	if(sfd > 0){
-	    FD_CLR(sfd,&rfds);
-	}
+
 	FD_ZERO(&rfds);
 	FD_SET(0,&rfds);
 	if(sfd > 0){
@@ -298,7 +294,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
         FD_SET(ffd, &rfds);
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
-	psus_log(10,"Waiting for DATA(uid=%d,nid=%d)...",ffd,sfd);
+	psus_log(10,"Waiting for DATA(uid=%d,nid=%d,max=%d)...",ffd,sfd,MAX(sfd,ffd)+1);
 	if(tv.tv_sec == -1)
 		iRet = select(MAX(sfd,ffd)+1, &rfds, NULL, NULL, NULL);
 	else
