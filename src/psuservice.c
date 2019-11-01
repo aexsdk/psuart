@@ -299,9 +299,9 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	tv.tv_sec = timeout;
 	psus_log(10,"Waiting for DATA(uid=%d,nid=%d)...",ffd,sfd);
 	if(tv.tv_sec == -1)
-		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, NULL);
+		iRet = select(MAX(sfd,ffd)+1, &rfds, NULL, NULL, NULL);
 	else
-		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, &tv);
+		iRet = select(MAX(sfd,ffd)+1, &rfds, NULL, NULL, &tv);
 	if(0 >= iRet){
 		return 0;   //等待超时，进入下一次循环
 	}
