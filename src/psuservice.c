@@ -174,7 +174,7 @@ void dump_buffer(char *pstr,int size)
 
 	while(p != NULL && size > 0){
 		memset(buf,0,sizeof(buf));
-		HexEncode(p,size,buf,&hexlen);
+		HexEncode(p,MIN(16,size),buf,&hexlen);
 		_log(psus_data.log_file,psus_data.flag,buf);
 		p += 16;
 		size -= 16;
@@ -296,7 +296,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
         FD_SET(ffd, &rfds);
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
-	psus_log(10,"Waiting for DATA...");
+	psus_log(10,"Waiting for DATA(uid=%d,nid=%d)...",ffd,sfd);
 	if(tv.tv_sec == -1)
 		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, NULL);
 	else
@@ -307,27 +307,26 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	if(FD_ISSET(ffd, &rfds))
 	{
 		//这里处理通过UART收到的命令
-		_log(psus_data.log_file,psus_data.flag,"UART:\n");
+		//_log(psus_data.log_file,psus_data.flag,"UART:\n");
 		memset(buf,0,sizeof(buf));
 		len = read(ffd,buf,sizeof(buf));
 		if(len > 0 && sfd > 0){
 			iRet = write(sfd,buf,len);
 			#ifdef PSU_DEBUG
-				_log(psus_data.log_file,psus_data.flag,"UART:\n");
+				_log(psus_data.log_file,psus_data.flag,"UART:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
-	}
-	if(FD_ISSET(sfd, &rfds))
+	}else if(FD_ISSET(sfd, &rfds))
 	{
 		//这里处理的是服务器主动向客户端发送的消息，处理完以后客户端沿沿原途径做出回应
-		_log(psus_data.log_file,psus_data.flag,"UART:\n");
+		//_log(psus_data.log_file,psus_data.flag,"UART:\n");
 		memset(buf,0,sizeof(buf));
 		len = read(sfd,buf,sizeof(buf));
 		if(len > 0 && ffd > 0){
 			iRet = write(ffd,buf,len);
 			#ifdef PSU_DEBUG
-				_log(psus_data.log_file,psus_data.flag,"NET:\n");
+				_log(psus_data.log_file,psus_data.flag,"NET:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}

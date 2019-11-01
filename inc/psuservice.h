@@ -18,6 +18,7 @@
 
 #define MAX_PATH	260
 #define MAX(a,b) (a>b)?(a):(b)
+#define MIN(a,b) (a<b)?(a):(b)
 
 #ifdef ANDROIDEX
 	#define DEFAULT_ROOT_PATH		"/data/log/"
