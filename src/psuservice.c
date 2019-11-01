@@ -174,9 +174,8 @@ void dump_buffer(char *pstr,int size)
 
 	while(size > 0){
 		memset(buf,0,sizeof(buf));
-		buf[0] = '\t';
-		HexEncode(p,MIN(16,size),buf+1,&hexlen);
-		_log(psus_data.log_file,psus_data.flag,buf);
+		HexEncode(p,MIN(16,size),buf,&hexlen);
+		printf("\t%s \n",buf);
 		p += 16;
 		size -= 16;
 	}
