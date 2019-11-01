@@ -160,7 +160,7 @@ static int LoadPsuConfig(char *fn)
 	memset(&(psudata->net_addr),0,sizeof(struct sockaddr));
 	addr = ParseIPAddr(psudata->network_ipaddr,&port);
 	psudata->net_addr.sin_family = AF_INET;
-	psudata->net_addr.sin_addr.s_addr = htonl(addr);
+	psudata->net_addr.sin_addr.s_addr = addr;
 	psudata->net_addr.sin_port = htons(port);
 
     return r;
@@ -205,7 +205,7 @@ char *IP2Str(unsigned long ip)
 {
 	static char buf[20];
 	
-	sprintf(buf,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+	sprintf(buf,"%d.%d.%d.%d",ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF);
 	return buf;
 }
 
@@ -221,6 +221,7 @@ int StartServiceSocket(psus_config *psudata)
 		return -1;
 	}
 
+    /*
     struct timeval timeout;
     timeout.tv_sec = 0;
     timeout.tv_usec = 1000;
@@ -232,6 +233,7 @@ int StartServiceSocket(psus_config *psudata)
 	if(!SetNonblocking(psudata->net_fd)){
 		psus_warning("set socket %d nonblocking fail.",psudata->net_fd);
 	}
+	*/
 	psus_log(10,"Socket connecting to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
 	if(connect(psudata->net_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))<0)
 	{
@@ -269,7 +271,7 @@ void CloseServiceSocket(psus_config *psudata)
 int WaitMessageAndHandle(char *configfn,int timeout)
 {
 	int iRet = 0,mfd,sfd,ffd;
-	fd_set rfds,wfds;
+	fd_set rfds;
 	psus_config *psudata = get_psus_data();
 	int len;
 	unsigned char buf[4096];
@@ -285,33 +287,27 @@ int WaitMessageAndHandle(char *configfn,int timeout)
         FD_CLR(ffd,&rfds);
 	if(sfd > 0){
 	    FD_CLR(sfd,&rfds);
-	    FD_CLR(sfd,&wfds);
 	}
 	FD_ZERO(&rfds);
-	FD_ZERO(&wfds);
 	if(sfd > 0){
         FD_SET(sfd, &rfds);
-        FD_SET(sfd, &wfds);
     }
 	if(ffd > 0)
         FD_SET(ffd, &rfds);
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
+	psus_log(10,"Waiting for DATA...");
 	if(tv.tv_sec == -1)
-		iRet = select(MAX(sfd,ffd), &rfds, &wfds, NULL, NULL);
+		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, NULL);
 	else
-		iRet = select(MAX(sfd,ffd), &rfds, &wfds, NULL, &tv);
+		iRet = select(MAX(sfd,ffd), &rfds, NULL, NULL, &tv);
 	if(0 >= iRet){
-		if(iRet == 0){
-			int error;
-			iRet = getsockopt(sfd, SOL_SOCKET, SO_ERROR, &error, (socklen_t *)&len);
-			psus_log(10,"Socket getsockopt[err=%d]:%d",error,iRet);
-		}
 		return 0;   //等待超时，进入下一次循环
 	}
 	if(FD_ISSET(ffd, &rfds))
 	{
 		//这里处理通过UART收到的命令
+		_log(psus_data.log_file,psus_data.flag,"UART:\n");
 		memset(buf,0,sizeof(buf));
 		len = read(ffd,buf,sizeof(buf));
 		if(len > 0 && sfd > 0){
@@ -325,6 +321,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	if(FD_ISSET(sfd, &rfds))
 	{
 		//这里处理的是服务器主动向客户端发送的消息，处理完以后客户端沿沿原途径做出回应
+		_log(psus_data.log_file,psus_data.flag,"UART:\n");
 		memset(buf,0,sizeof(buf));
 		len = read(sfd,buf,sizeof(buf));
 		if(len > 0 && ffd > 0){
@@ -335,16 +332,22 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 			#endif
 		}
 	}
-	if(FD_ISSET(sfd, &wfds)){
-		int error;
-		iRet = getsockopt(sfd, SOL_SOCKET, SO_ERROR, &error, (socklen_t *)&len);
-		psus_log(10,"Socket getsockopt[err=%d]:%s",error,strerror(errno));
-		if(iRet == 0 && error == 0){
-			psus_log(10,"Socket connected to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
-			Setblocking(sfd);
-		}
-	}
 	return iRet;
+}
+
+void signal_func(int sign_no)
+{ 
+	if(sign_no == SIGINT){ 
+		printf("\nI have get SIGINT\n"); 
+		CloseUart(get_psus_data());
+		CloseServiceSocket(get_psus_data());
+		exit(0);
+	}else if(sign_no == SIGQUIT){
+		printf("\nI have get SIGQUIT\n"); 
+		CloseUart(get_psus_data());
+		CloseServiceSocket(get_psus_data());
+		exit(0);
+	}
 }
 
 int main(int argc, char* argv[])
@@ -360,6 +363,9 @@ int main(int argc, char* argv[])
     printf("Use config file : %s\n",fn);
 
     LoadPsuConfig(fn);
+	signal(SIGINT,signal_func); 
+	signal(SIGQUIT,signal_func); 
+
     if(GetCmdParamValue(argc,argv,"log",tmp)){
         strcpy(psus_data.log_file,tmp);
     }
