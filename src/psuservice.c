@@ -313,7 +313,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(len > 0 && sfd > 0){
 			iRet = write(sfd,buf,len);
 			#ifdef PSU_DEBUG
-				_log(psus_data.log_file,psus_data.flag,"UART:%d\n",len);
+				psus_log(psus_data.log_file,psus_data.flag,"UART:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
@@ -326,7 +326,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(len > 0 && ffd > 0){
 			iRet = write(ffd,buf,len);
 			#ifdef PSU_DEBUG
-				_log(psus_data.log_file,psus_data.flag,"NET:%d\n",len);
+				psus_log(psus_data.log_file,psus_data.flag,"NET:%d\n",len);
 				dump_buffer(buf,len);
 			#endif
 		}
