@@ -50,7 +50,7 @@ static int handler(void *user, const char *section, const char *name,const char 
 /* print all the variables in the config, one per line */
 static void dump_config(psus_config *cfg)
 {
-    #define CFG(s, n, default) psus_log(10,"%s_%s = %s", #s, #n, cfg->s##_##n == NULL?"":cfg->s##_##n);
+    #define CFG(s, n, default) printf("%s_%s = %s", #s, #n, cfg->s##_##n == NULL?"":cfg->s##_##n);
     #include "psuservice.def"
 }
 
@@ -149,10 +149,6 @@ static int LoadPsuConfig(char *fn)
 	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
 	SetLogLevel(psudata->minLevel,psudata->maxLevel);
 	
-	psudata->flag = StrToInt(psudata->log_flag);
-	psudata->minLevel = StrToInt(psudata->log_minLevel);
-	psudata->maxLevel = StrToInt(psudata->log_maxLevel);
-	SetLogLevel(psudata->minLevel,psudata->maxLevel);
 	psudata->selectTimeout = StrToInt(psudata->network_selectTimeout);
 
 	//初始化服务Socket地址信息
