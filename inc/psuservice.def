@@ -9,6 +9,7 @@ CFG(log, maxLevel,"10")
 CFG(uart, port, "/dev/ttyACM0,115200,N,1,8")
 
 CFG(network, ipaddr, "10.10.10.3:5000")
+CFG(network, udpport, "5000")
 CFG(network, timeout, "3")
 CFG(network, retries, "3")
 CFG(network, secret, "androidex")
