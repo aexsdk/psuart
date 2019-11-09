@@ -306,7 +306,7 @@ int TcpSocketStatus(psus_config *psudata)
 	socklen_t len = sizeof(int);
 	
 	if(psudata->tcp_fd > 0){
-		if(getsockopt(psudata->tcp_fd,  SOL_SOCKET, SO_ERROR ,&err, &len) < 0 )
+		if(getsockopt(psudata->tcp_fd, SOL_SOCKET, SO_ERROR ,&err, &len) < 0 )
 		{
 			CloseTcpSocket(psudata);
 			psus_error("Tcp getsockopt errno:%d %s\n", errno, strerror(errno));
