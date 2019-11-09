@@ -100,7 +100,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_psuart_OBJECTS = psuservice.$(OBJEXT) ini.$(OBJEXT) utils.$(OBJEXT) \
-	xLogMessage.$(OBJEXT) ringBuffer.$(OBJEXT)
+	xLogMessage.$(OBJEXT) ringBuffer.$(OBJEXT) rader.$(OBJEXT)
 psuart_OBJECTS = $(am_psuart_OBJECTS)
 psuart_DEPENDENCIES = 
 AM_V_P = $(am__v_P_$(V))
@@ -251,7 +251,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 psuart_INCLUDES = $(PSRLIB_INC)
-psuart_SOURCES = psuservice.c ini.c utils.c xLogMessage.c ringBuffer.c
+psuart_SOURCES = psuservice.c ini.c utils.c xLogMessage.c ringBuffer.c rader.c
 psuart_LDADD =   
 all: all-am
 
@@ -341,6 +341,7 @@ distclean-compile:
 
 include ./$(DEPDIR)/ini.Po
 include ./$(DEPDIR)/psuservice.Po
+include ./$(DEPDIR)/rader.Po
 include ./$(DEPDIR)/ringBuffer.Po
 include ./$(DEPDIR)/utils.Po
 include ./$(DEPDIR)/xLogMessage.Po

@@ -5,7 +5,7 @@
 #include <stdlib.h>     /*标准函数库定义*/
 #include <string.h>
 
-#include <ringbuffer.h>
+#include <ringBuffer.h>
 #define EINVAL 22
 #define ENOMEM 12
 

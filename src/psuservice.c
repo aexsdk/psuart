@@ -18,6 +18,8 @@
 #include <sys/wait.h>
 
 #include "psuservice.h"
+#include "rader.h"
+
 static psus_config psus_data;               //从配置文件中读取的服务端配置数据
 
 
@@ -385,7 +387,11 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		memset(buf,0,sizeof(buf));
 		len = read(uartFd,buf,sizeof(buf));
 		if(len > 0 && tcpFd > 0){
-			iRet = write(tcpFd,buf,len);
+			#ifdef RADER_PASS
+				iRet = write(tcpFd,buf,len);
+			#else
+				rader_recv(tcpFd,buf,len);
+			#endif
 			printf("UART:%d\n",len);
 			#ifdef PSU_DEBUG
 				dump_buffer(buf,len);
@@ -399,7 +405,11 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		memset(buf,0,sizeof(buf));
 		len = read(tcpFd,buf,sizeof(buf));
 		if(len > 0 && uartFd > 0){
-			iRet = write(uartFd,buf,len);
+			#ifdef RADER_PASS
+				iRet = write(uartFd,buf,len);
+			#else
+				rader_cmd(uartFd,buf,len);
+			#endif
 			printf("TCPNET:%d\n",len);
 			//#ifdef PSU_DEBUG
 				dump_buffer(buf,len);
@@ -413,7 +423,11 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		memset(buf,0,sizeof(buf));
 		len = read(udpFd,buf,sizeof(buf));
 		if(len > 0 && udpFd > 0){
-			iRet = write(uartFd,buf,len);
+			#ifdef RADER_PASS
+				iRet = write(uartFd,buf,len);
+			#else
+				rader_cmd(uartFd,buf,len);
+			#endif
 			printf("UDPNET:%d\n",len);
 			//#ifdef PSU_DEBUG
 				dump_buffer(buf,len);
@@ -424,7 +438,8 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	{
 		memset(buf,0,sizeof(buf));
 		scanf("%s",buf);
-		write(uartFd,buf,strlen(buf));
+		rader_cmd_from_stdin(uartFd,buf,strlen(buf));
+		//write(uartFd,buf,strlen(buf));
 	}
 	return iRet;
 }
@@ -485,6 +500,7 @@ int main(int argc, char* argv[])
             return 0;
         }
     }
+    rader_init();
     //启动服务处理循环
     //处理命令接口
     int iRet = 0;
