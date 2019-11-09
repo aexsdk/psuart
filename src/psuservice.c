@@ -390,7 +390,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		//_log(psus_data.log_file,psus_data.flag,"UART:\n");
 		memset(buf,0,sizeof(buf));
 		len = read(uartFd,buf,sizeof(buf));
-		if(len > 0 && tcpFd > 0){
+		if(len > 0 && tcpFd > 0 && tcp_connected != 0){
 			#ifdef RADER_PASS
 				iRet = write(tcpFd,buf,len);
 			#else
