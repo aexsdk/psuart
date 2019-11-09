@@ -36,7 +36,9 @@ typedef struct {
     int   selectTimeout;                //Select等待的超时时间
     struct  sockaddr_in net_addr;       //提供服务的监听地址和端口
     int uart_fd;                        //存储本地管理和接口命令的FIFO文件描述符
-    int net_fd;                         //存储服务监听的Socket文件描述符
+    int tcp_fd;                         //存储TCP的Socket文件描述符
+    int udp_fd;							//存储UDP通讯的Socket文件描述符
+    unsigned short udpport;
 
     #define CFG(s, n, default) char *s##_##n;
     #include "psuservice.def"

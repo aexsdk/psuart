@@ -2,6 +2,7 @@
 #define __APP_UTILS__
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <string.h>
 #include <netinet/in.h>
@@ -63,6 +64,10 @@ int ParseCmdParamValue(const char *cmd,const char *param,char *value);
 int  SetNonblocking(int  fd);
 int get_ip(char *localip);
 void DisplaySocketInfo(int sockfd);
+
+int max_value(int a,...);
+int min_value(int a,...);
+int sum_value(int a,...);
 
 /*
  * 当发现一个可用串口时的回调函数，这个回调函数讲用于each_comm函数

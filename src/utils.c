@@ -699,6 +699,62 @@ void DisplaySocketInfo(int sockfd)
     //psrlib_log(10,"inet mask: %s ",(char*)inet_ntoa(addr->sin_addr));
 }
 
+int max_value(int a,...)
+{
+	int ret = a,step = 0;
+	va_list args;
+
+	va_start(args, a);
+	//va_arg第一个参数是可变参数的地址，第二个参数是传入参数的类型，返回值就是va_list中接着的地址值，类型和va_arg的第二个参数一样
+	//不等于0表示，va_list中还有参数可取
+	while ( a > 0)
+	{
+		step = va_arg(args, int);		//va_arg 取得下一个指针
+		ret = ret > step ? ret : step;
+		a--;
+	}
+	va_end(args);
+	
+	return ret;
+}
+
+int min_value(int a,...)
+{
+	int ret = a,step = 0;
+	va_list args;
+
+	va_start(args, a);
+	//va_arg第一个参数是可变参数的地址，第二个参数是传入参数的类型，返回值就是va_list中接着的地址值，类型和va_arg的第二个参数一样
+	//不等于0表示，va_list中还有参数可取
+	while ( a > 0)
+	{
+		step = va_arg(args, int);		//va_arg 取得下一个指针
+		ret = ret < step ? ret : step;
+		a--;
+	}
+	va_end(args);
+	
+	return ret;
+}
+
+int sum_value(int a,...)
+{
+	int ret = a,step = 0;
+	va_list args;
+
+	va_start(args, a);
+	//va_arg第一个参数是可变参数的地址，第二个参数是传入参数的类型，返回值就是va_list中接着的地址值，类型和va_arg的第二个参数一样
+	//不等于0表示，va_list中还有参数可取
+	while ( a > 0)
+	{
+		step = va_arg(args, int);		//va_arg 取得下一个指针
+		ret += step;
+		a--;
+	}
+	va_end(args);
+	
+	return ret;
+}
 
 /**
  * 串口操作的函数库
