@@ -324,6 +324,7 @@ int TcpSocketStatus(psus_config *psudata)
 	return -1;
 }
 
+static tcp_connected = 0;
 int WaitMessageAndHandle(char *configfn,int timeout)
 {
 	int iRet = 0,tcpFd,udpFd,uartFd;
@@ -353,11 +354,13 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		FD_SET(uartFd, &rfds);
 
 	FD_ZERO(&wfds);
-	FD_SET(tcpFd,&wfds);
+	if(tcp_connected == 0){
+		FD_SET(tcpFd,&wfds);
+	}
 
 	struct timeval tv={5,0};
 	tv.tv_sec = timeout;
-	psus_log(10,"Waiting for DATA(uid=%d,nid=%d,%d,max=%d)...",uartFd,tcpFd,udpFd,max_value(3,tcpFd,udpFd,uartFd));
+	//psus_log(10,"Waiting for DATA(uid=%d,nid=%d,%d,max=%d)...",uartFd,tcpFd,udpFd,max_value(3,tcpFd,udpFd,uartFd));
 	if(tv.tv_sec == -1)
 		iRet = select(max_value(3,tcpFd,udpFd,uartFd)+1, &rfds, &wfds, NULL, NULL);
 	else
@@ -376,6 +379,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	if(FD_ISSET(tcpFd,&wfds)){
 		if(TcpSocketStatus(psudata) == 0){
 			printf("TCP Connected\n");
+			tcp_connected = 1;
 		}else{
 			printf("TCP Connect fail\n");
 		}
