@@ -108,20 +108,19 @@ void rader_cmd(int fd,unsigned char *buf,size_t len)
 	while((len>0) && (ERUP_GET_BEGIN(p) != ERUP_BEGIN)){
 		p++;
 		len--;
-		
-		printf("test len %d-%02X\n",len,ERUP_GET_BEGIN(p));
+		//printf("test len %d-%02X\n",len,ERUP_GET_BEGIN(p));
 
 	}
 	if(len < ERUP_GET_PACKET_LEN(p))
 	{
-	    printf("test %d\n",len);
+	    //printf("test %d\n",len);
 	    return;		//need continue recv data
 	}
 
     printf("crc test %02X,%02X\n",ERUP_GET_CRC(p),crc8(ERUP_GET_DATA(p),ERUP_GET_LEN(p)));
 	
 	if(ERUP_GET_END(p) != ERUP_END || ERUP_GET_CRC(p) != crc8(ERUP_GET_DATA(p),ERUP_GET_LEN(p))){
-	    printf("test\n");
+	    printf("cmd packnet error.\n");
 		//return ; //packnet error 
 	}
 	
@@ -130,7 +129,7 @@ void rader_cmd(int fd,unsigned char *buf,size_t len)
         ringbuffer_reset(&raderFifo);
         rdaerCmdFlag = rader_flag(ERUP_GET_DATA(p),ERUP_GET_LEN(p));
         raderDlen = rader_dlen(rdaerCmdFlag);
-        printf("command %02X-%d\n",rdaerCmdFlag,raderDlen);
+        //printf("command %02X-%d\n",rdaerCmdFlag,raderDlen);
         write(fd,ERUP_GET_DATA(p),ERUP_GET_LEN(p));
     }
     else

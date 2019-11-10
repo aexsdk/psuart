@@ -406,7 +406,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 				if(rader_recv(tcpFd,buf,len) == DATA_FLAG_S)
 				{
 				    rader_cmd_from_stdin(uartFd,"F",1);
-				    printf("send F\n");
+				    //printf("send F\n");
 				}
 				
 			#endif
