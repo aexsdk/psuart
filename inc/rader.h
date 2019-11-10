@@ -33,11 +33,12 @@
 #define DATA_FLAG_m		0x10
 #define DATA_FLAG_M		0x11
 #define DATA_FLAG_p		0x20
+#define DATA_FLAG_S     0x21
 
 unsigned char crc8(unsigned char *buffer, unsigned int len);
 int rader_init();
-void rader_cmd(int fd,char *buf,size_t len);
-void rader_recv(int fd,char *data,size_t len);
+void rader_cmd(int fd,unsigned char *buf,size_t len);
+unsigned char rader_recv(int fd,char *data,size_t len);
 void rader_cmd_from_stdin(int fd,char *buf,size_t len);
 
 #endif //__RADER_H__

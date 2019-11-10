@@ -254,6 +254,8 @@ void CloseUdpSocket(psus_config *psudata)
 	}
 }
 
+static tcp_connected = 0;
+
 int StartTcpSocket(psus_config *psudata)
 {
 	if(psudata->tcp_fd > 0){
@@ -266,7 +268,7 @@ int StartTcpSocket(psus_config *psudata)
 	}
 
 	struct timeval timeout;
-	timeout.tv_sec = 1;
+	timeout.tv_sec = 10;
 	timeout.tv_usec = 0;
 	socklen_t len = sizeof(struct timeval);
 	if(setsockopt( psudata->tcp_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, len ) == -1){
@@ -276,6 +278,8 @@ int StartTcpSocket(psus_config *psudata)
 	if(!SetNonblocking(psudata->tcp_fd)){
 		psus_warning("set socket %d nonblocking fail.",psudata->tcp_fd);
 	}
+	
+	tcp_connected = 0;
 	
 	psus_log(10,"Socket connecting to %s:%d...",IP2Str(psudata->net_addr.sin_addr.s_addr),ntohs(psudata->net_addr.sin_port));
 	if(connect(psudata->tcp_fd,(struct sockaddr *)&psudata->net_addr,sizeof(struct sockaddr))<0)
@@ -324,7 +328,6 @@ int TcpSocketStatus(psus_config *psudata)
 	return -1;
 }
 
-static tcp_connected = 0;
 int WaitMessageAndHandle(char *configfn,int timeout)
 {
 	int iRet = 0,tcpFd,udpFd,uartFd;
@@ -344,9 +347,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 
 	FD_ZERO(&rfds);
 	FD_SET(0,&rfds);
-	if(tcpFd > 0){
-		FD_SET(tcpFd, &rfds);
-	}
+
 	if(udpFd > 0){
 		FD_SET(udpFd, &rfds);
 	}
@@ -354,8 +355,13 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		FD_SET(uartFd, &rfds);
 
 	FD_ZERO(&wfds);
-	if(tcp_connected == 0){
-		FD_SET(tcpFd,&wfds);
+	
+	if(tcpFd > 0 && tcp_connected == 0){
+		FD_SET(tcpFd, &wfds);
+	}
+	
+	if(tcpFd > 0 && tcp_connected == 1){
+		FD_SET(tcpFd, &rfds);
 	}
 
 	struct timeval tv={5,0};
@@ -381,6 +387,7 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 			printf("TCP Connected\n");
 			tcp_connected = 1;
 		}else{
+			tcp_connected = 0;
 			printf("TCP Connect fail\n");
 		}
 	}
@@ -390,13 +397,19 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		//_log(psus_data.log_file,psus_data.flag,"UART:\n");
 		memset(buf,0,sizeof(buf));
 		len = read(uartFd,buf,sizeof(buf));
+
 		if(len > 0 && tcpFd > 0 && tcp_connected != 0){
+			printf("UART:%d\n",len);
 			#ifdef RADER_PASS
 				iRet = write(tcpFd,buf,len);
 			#else
-				rader_recv(tcpFd,buf,len);
+				if(rader_recv(tcpFd,buf,len) == DATA_FLAG_S)
+				{
+				    rader_cmd_from_stdin(uartFd,"F",1);
+				    printf("send F\n");
+				}
+				
 			#endif
-			printf("UART:%d\n",len);
 			#ifdef PSU_DEBUG
 				dump_buffer(buf,len);
 			#endif
