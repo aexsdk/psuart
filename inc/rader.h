@@ -37,7 +37,7 @@
 
 unsigned char crc8(unsigned char *buffer, unsigned int len);
 int rader_init();
-void rader_cmd(int fd,unsigned char *buf,size_t len);
+unsigned char rader_cmd(int fd,unsigned char *buf,size_t len);
 unsigned char rader_recv(int fd,char *data,size_t len);
 int rader_heart(int fd,char *buf,char *data,size_t len);
 void rader_cmd_from_stdin(int fd,char *buf,size_t len);

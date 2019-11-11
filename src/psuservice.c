@@ -464,7 +464,10 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 			#ifdef RADER_PASS
 				iRet = write(uartFd,buf,len);
 			#else
-				rader_cmd(uartFd,buf,len);
+                if(rader_cmd(uartFd,buf,len) == 1)          //socket 关闭指令
+                {
+                    CloseTcpSocket(psudata);
+                }
 			#endif
 			printf("UDPNET:%d\n",len);
 			//#ifdef PSU_DEBUG

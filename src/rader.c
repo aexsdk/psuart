@@ -111,10 +111,13 @@ int rader_heart(int fd,char *buf,char *data,size_t len)
 	return ERUP_GET_PACKET_LEN(buf);
 }
 
-void rader_cmd(int fd,unsigned char *buf,size_t len)
+unsigned char rader_cmd(int fd,unsigned char *buf,size_t len)
 {
 	unsigned char *p = buf;
+	unsigned char chBuf[30];
 	
+	memset(chBuf,0,sizeof(chBuf));
+
 	printf("test %02X\n",ERUP_GET_BEGIN(p));
 	
 	while((len>0) && (ERUP_GET_BEGIN(p) != ERUP_BEGIN)){
@@ -126,14 +129,14 @@ void rader_cmd(int fd,unsigned char *buf,size_t len)
 	if(len < ERUP_GET_PACKET_LEN(p))
 	{
 	    //printf("test %d\n",len);
-	    return;		//need continue recv data
+	    return 0;		//need continue recv data
 	}
 
     printf("crc test %02X,%02X\n",ERUP_GET_CRC(p),crc8(ERUP_GET_DATA(p),ERUP_GET_LEN(p)));
 	
 	if(ERUP_GET_END(p) != ERUP_END || ERUP_GET_CRC(p) != crc8(ERUP_GET_DATA(p),ERUP_GET_LEN(p))){
 	    printf("cmd packnet error.\n");
-		return ; //packnet error 
+		return 0; //packnet error 
 	}
 	
 	if(raderDlen == 0)
@@ -148,6 +151,19 @@ void rader_cmd(int fd,unsigned char *buf,size_t len)
     {
         printf("receive data is not finish \n");
     }
+    
+    if(ERUP_GET_LEN(p) <= 30)
+    {
+        memcpy(chBuf,ERUP_GET_DATA(p),ERUP_GET_LEN(p));
+        
+        if(strcasecmp(chBuf,"close socket!") == 0)
+        {
+            printf("receive close socket command!");
+            return 1;
+        }
+    }
+	
+	return 0;
 }
 
 
