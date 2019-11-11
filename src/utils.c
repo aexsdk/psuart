@@ -214,8 +214,10 @@ unsigned int ParseIPAddr(char *cAddr,unsigned short *port)
 	strcpy(Buf,cAddr);
 	ppos = strchr(p,':');
 	if(ppos == NULL)
+	{
 		if(port != NULL)
 			*port = 0;
+	}
 	else{
 		if(port != NULL) *port = StrToInt(ppos+1);
 		*ppos = '\0';

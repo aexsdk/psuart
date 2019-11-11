@@ -244,6 +244,7 @@ int StartUdpSocket(psus_config *psudata)
 	psus_log(10,"Udp socket bind to %d...",psudata->udpport);
 	//sendto(sockfd, buffer, len, 0, (struct sockaddr *)&addr, addr_len);
 	//int rader_heart(int fd,char *buf,char *data,size_t len)
+	/*
 	{
 		char bb[100];
 		struct sockaddr_in addr;
@@ -256,6 +257,7 @@ int StartUdpSocket(psus_config *psudata)
 		addr.sin_port = htons(psudata->udpport);
 		sendto(psudata->udp_fd,bb,l,0,(struct sockaddr *)&addr, sizeof(struct sockaddr));
 	}
+	*/
 	return psudata->udp_fd;
 }
 
@@ -399,9 +401,11 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		if(TcpSocketStatus(psudata) == 0){
 			printf("TCP Connected\n");
 			tcp_connected = 1;
+			
+			set_raderDlen(0);           //清除串口接收数据是否完成标志位
 		}else{
-			tcp_connected = 0;
 			printf("TCP Connect fail\n");
+			tcp_connected = 0;
 		}
 	}
 	if(FD_ISSET(uartFd, &rfds))
@@ -454,6 +458,8 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 		memset(buf,0,sizeof(buf));
 		//len = read(udpFd,buf,sizeof(buf));
 		len = recvfrom(udpFd, buf, sizeof(buf), 0, (struct sockaddr *)&psudata->net_addr, &addr_len);
+		psudata->net_addr.sin_port = htons(psudata->udpport);
+		
 		if(len > 0 && udpFd > 0){
 			#ifdef RADER_PASS
 				iRet = write(uartFd,buf,len);

@@ -42,4 +42,6 @@ unsigned char rader_recv(int fd,char *data,size_t len);
 int rader_heart(int fd,char *buf,char *data,size_t len);
 void rader_cmd_from_stdin(int fd,char *buf,size_t len);
 
+void set_raderDlen(unsigned short value);
+
 #endif //__RADER_H__

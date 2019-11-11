@@ -182,3 +182,8 @@ void rader_cmd_from_stdin(int fd,char *buf,size_t len)
         printf("receive data is not finish from stdin \n");
     }
 }
+
+void set_raderDlen(unsigned short value)
+{
+    raderDlen = value;
+}
