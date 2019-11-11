@@ -19,14 +19,14 @@
 # config: /eztor/parkserver/cfg/parkserver.conf
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+#. /etc/rc.d/init.d/functions
 
 # Source networking configuration.
-. /etc/sysconfig/network
+#. /etc/sysconfig/network
 
 BINPATH="/usr/bin"
 CONFIGFILE="/etc/psuconfig.conf"
-LOGFILE="/var/log/psuconfig.log"
+LOGFILE="/tmp/psuconfig.log"
 BINFILE="$BINPATH/psuart"
 RETVAL=0
 prog="psuart"
@@ -35,7 +35,7 @@ start() {
         # Start daemons.
 	
 	# Check that networking is up.
-	[ ${NETWORKING} = "no" ] && exit 1
+	#[ ${NETWORKING} = "no" ] && exit 1
 	[ -x $BINFILE ] || exit 1
 	[ -x $CONFIGFILE ] || exit 1
 	echo -n $"Starting $prog : "
@@ -49,7 +49,7 @@ start() {
 stop() {
         # Stop daemons.
         echo -n $"Shutting down $prog: "
-        killproc $prog
+        killall $prog
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
