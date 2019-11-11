@@ -14,9 +14,9 @@
 //获得数据的起始地址
 #define		ERUP_GET_DATA(buf)			(buf+4)
 //获得信令CRC值
-#define		ERUP_GET_CRC(buf)			(buf[ERUP_GET_LEN(buf)+5])
+#define		ERUP_GET_CRC(buf)			(buf[ERUP_GET_LEN(buf)+4])
 //获得结束标志
-#define		ERUP_GET_END(buf)			(buf[ERUP_GET_LEN(buf)+6])
+#define		ERUP_GET_END(buf)			(buf[ERUP_GET_LEN(buf)+5])
 //获得信令参数的长度
 #define		ERUP_GET_PACKET_LEN(buf)	(ERUP_GET_LEN(buf)+6)		
 

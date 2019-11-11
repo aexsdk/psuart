@@ -133,7 +133,7 @@ void rader_cmd(int fd,unsigned char *buf,size_t len)
 	
 	if(ERUP_GET_END(p) != ERUP_END || ERUP_GET_CRC(p) != crc8(ERUP_GET_DATA(p),ERUP_GET_LEN(p))){
 	    printf("cmd packnet error.\n");
-		//return ; //packnet error 
+		return ; //packnet error 
 	}
 	
 	if(raderDlen == 0)
