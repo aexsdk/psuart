@@ -242,7 +242,20 @@ int StartUdpSocket(psus_config *psudata)
 		return -2;
 	}
 	psus_log(10,"Udp socket bind to %d...",psudata->udpport);
-	
+	//sendto(sockfd, buffer, len, 0, (struct sockaddr *)&addr, addr_len);
+	//int rader_heart(int fd,char *buf,char *data,size_t len)
+	{
+		char bb[100];
+		struct sockaddr_in addr;
+		
+		memset(bb,0,sizeof(bb));
+		int l = rader_heart(psudata->udp_fd,bb,"heart",5);
+		memset(&(psudata->net_addr),0,sizeof(struct sockaddr));
+		addr.sin_family = AF_INET;
+		addr.sin_addr.s_addr = ParseIPAddr("10.10.10.255",NULL);
+		addr.sin_port = htons(psudata->udpport);
+		sendto(psudata->udp_fd,bb,l,0,(struct sockaddr *)&addr, sizeof(struct sockaddr));
+	}
 	return psudata->udp_fd;
 }
 
@@ -436,9 +449,11 @@ int WaitMessageAndHandle(char *configfn,int timeout)
 	if(FD_ISSET(udpFd, &rfds))
 	{
 		//这里处理的是服务器主动向客户端发送的消息，处理完以后客户端沿沿原途径做出回应
+		size_t addr_len = sizeof(struct sockaddr);
 		//_log(psus_data.log_file,psus_data.flag,"UDPNET:\n");
 		memset(buf,0,sizeof(buf));
-		len = read(udpFd,buf,sizeof(buf));
+		//len = read(udpFd,buf,sizeof(buf));
+		len = recvfrom(udpFd, buf, sizeof(buf), 0, (struct sockaddr *)&psudata->net_addr, &addr_len);
 		if(len > 0 && udpFd > 0){
 			#ifdef RADER_PASS
 				iRet = write(uartFd,buf,len);

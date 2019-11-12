@@ -99,6 +99,18 @@ unsigned char rader_recv(int fd,char *data,size_t len)
 	return 0;
 }
 
+
+int rader_heart(int fd,char *buf,char *data,size_t len)
+{
+	ERUP_SET_BEGIN(buf);
+	ERUP_SET_LEN(buf,len);
+	ERUP_SET_FLAG(buf,0);
+	memcpy(ERUP_GET_DATA(buf),data,len);
+	ERUP_SET_CRC(buf);
+	ERUP_SET_END(buf);
+	return ERUP_GET_PACKET_LEN(buf);
+}
+
 void rader_cmd(int fd,unsigned char *buf,size_t len)
 {
 	unsigned char *p = buf;

@@ -214,9 +214,10 @@ unsigned int ParseIPAddr(char *cAddr,unsigned short *port)
 	strcpy(Buf,cAddr);
 	ppos = strchr(p,':');
 	if(ppos == NULL)
-		*port = 0;
+		if(port != NULL)
+			*port = 0;
 	else{
-		*port = StrToInt(ppos+1);
+		if(port != NULL) *port = StrToInt(ppos+1);
 		*ppos = '\0';
 	}
 	return get_ip_addr(Buf);
