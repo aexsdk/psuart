@@ -3,7 +3,7 @@
 
 bin_PROGRAMS = psuart
 psuart_INCLUDES = $(PSRLIB_INC)
-psuart_SOURCES = psuservice.c ini.c utils.c xLogMessage.c ringBuffer.c rader.c
+psuart_SOURCES = ../../src/psuservice.c ../../src/ini.c ../../src/utils.c ../../src/xLogMessage.c ../../src/ringBuffer.c ../../src/rader.c
 psuart_LDADD = @LIBOBJS@  
 
 

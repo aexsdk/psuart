@@ -1,4 +1,4 @@
 AUTOMAKE_OPTIONS=
 
-SUBDIRS=src 
+SUBDIRS=platform/linux 
 

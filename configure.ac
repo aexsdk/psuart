@@ -74,6 +74,6 @@ AC_CHECK_FUNCS([localtime_r memmove memset select socket strcasecmp strchr strer
 CFLAGS="$CFLAGS -I$PSRLIB_INC -I$PROJECTDIR/src/include"
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile
+                 platform/linux/Makefile
                  ])
 AC_OUTPUT

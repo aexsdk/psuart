@@ -1,4 +1,4 @@
-DIRS = src
+DIRS = platform/openwrt
 
 all: 
 	for i in $(DIRS) ; do $(MAKE) -C $$i $@ || exit $?; done 
